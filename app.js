@@ -3,7 +3,7 @@ const axios = require("axios");
 const path = require("path");
 
 const app = express();
-const apiKey = "7e179d9c382d06156d73cc3d716728d7"; // Add your API key directly here
+const apiKey = "Your_api_key"; // Add your API key directly here
 
 // Set EJS as the template engine
 app.set("view engine", "ejs");
