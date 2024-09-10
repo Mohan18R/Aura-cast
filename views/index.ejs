@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Cast</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <section class="top-banner">
+    <div class="container">
+      <h1 class="heading">Aura Cast</h1>
+      <form id="weather-form">
+        <input type="text" name="city" placeholder="Search for a city" autofocus>
+        <button type="submit">SEARCH</button>
+        <span class="msg"></span>
+      </form>
+    </div>
+  </section>
+  <section class="ajax-section">
+    <div class="container">
+      <ul class="cities"></ul>
+    </div>
+  </section>
+
+  <script>
+    const form = document.querySelector("#weather-form");
+    const msg = document.querySelector(".top-banner .msg");
+    const list = document.querySelector(".ajax-section .cities");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = form.querySelector("input[name='city']");
+      const city = input.value;
+
+      const response = await fetch("/weather", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ city })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const { name, country, temp, icon, description } = data;
+        const li = document.createElement("li");
+        li.classList.add("city");
+        li.innerHTML = `
+          <h2 class="city-name" data-name="${name},${country}">
+            <span>${name}</span>
+            <sup>${country}</sup>
+          </h2>
+          <div class="city-temp">${temp}<sup>°C</sup></div>
+          <figure>
+            <img class="city-icon" src="${icon}" alt="${description}">
+            <figcaption>${description}</figcaption>
+          </figure>
+        `;
+        list.appendChild(li);
+      } else {
+        msg.textContent = data.error;
+      }
+
+      msg.textContent = "";
+      form.reset();
+      input.focus();
+    });
+  </script>
+</body>
+</html>
