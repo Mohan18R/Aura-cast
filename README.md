@@ -15,3 +15,5 @@ Aura Cast is a simple weather web application built using **Node.js**, **Express
 - **HTML5 & CSS**: Structure and styling of the application.
 - **JavaScript**: Frontend scripting for form submission and DOM manipulation.
 
+## Screen Shot of application
+![sample](ss.png)
