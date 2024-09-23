@@ -10,7 +10,7 @@
   <section class="top-banner">
     <div class="container">
       <h1 class="heading">Aura Cast</h1>
-      <form id="weather-form">
+      <form id="weather-form" method="POST" action="/weather">
         <input type="text" name="city" placeholder="Search for a city" autofocus>
         <button type="submit">SEARCH</button>
         <span class="msg"></span>
@@ -25,43 +25,66 @@
 
   <script>
     const form = document.querySelector("#weather-form");
+    const input = document.querySelector("input[name='city']");
     const msg = document.querySelector(".top-banner .msg");
     const list = document.querySelector(".ajax-section .cities");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const input = form.querySelector("input[name='city']");
-      const city = input.value;
+      let inputVal = input.value.trim();
 
-      const response = await fetch("/weather", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ city })
-      });
+      // Check if the city is already displayed
+      const listItems = list.querySelectorAll(".ajax-section .city");
+      const listItemsArray = Array.from(listItems);
 
-      const data = await response.json();
+      if (listItemsArray.length > 0) {
+        const filteredArray = listItemsArray.filter(el => {
+          let content = el.querySelector(".city-name span").textContent.toLowerCase();
+          return content === inputVal.toLowerCase();
+        });
 
-      if (response.ok) {
-        const { name, country, temp, icon, description } = data;
-        const li = document.createElement("li");
-        li.classList.add("city");
-        li.innerHTML = `
-          <h2 class="city-name" data-name="${name},${country}">
-            <span>${name}</span>
-            <sup>${country}</sup>
-          </h2>
-          <div class="city-temp">${temp}<sup>°C</sup></div>
-          <figure>
-            <img class="city-icon" src="${icon}" alt="${description}">
-            <figcaption>${description}</figcaption>
-          </figure>
-        `;
-        list.appendChild(li);
-      } else {
-        msg.textContent = data.error;
+        if (filteredArray.length > 0) {
+          msg.textContent = `You already know the weather for ${filteredArray[0].querySelector(".city-name span").textContent}. Please be more specific.`;
+          form.reset();
+          input.focus();
+          return;
+        }
       }
 
-      msg.textContent = "";
+      try {
+        // Make an AJAX request to the server-side weather endpoint
+        const response = await fetch("/weather", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ city: inputVal })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          const { name, country, temp, icon, description } = data;
+
+          const li = document.createElement("li");
+          li.classList.add("city");
+          li.innerHTML = `
+            <h2 class="city-name" data-name="${name},${country}">
+              <span>${name}</span>
+              <sup>${country}</sup>
+            </h2>
+            <div class="city-temp">${temp}<sup>°C</sup></div>
+            <figure>
+              <img class="city-icon" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/${icon}.svg" alt="${description}">
+              <figcaption>${description}</figcaption>
+            </figure>
+          `;
+          list.appendChild(li);
+          msg.textContent = "";
+        } else {
+          msg.textContent = data.error;
+        }
+      } catch (error) {
+        msg.textContent = "There was an error. Please try again.";
+      }
+
       form.reset();
       input.focus();
     });

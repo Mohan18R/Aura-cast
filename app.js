@@ -1,11 +1,9 @@
 const express = require("express");
 const axios = require("axios");
-const path = require("path");
-
 const app = express();
-const apiKey = "Your_api_key"; // Add your API key directly here
+const apiKey = "7e179d9c382d06156d73cc3d716728d7"; // Replace with your API key
 
-// Set EJS as the template engine
+// Set the view engine to EJS
 app.set("view engine", "ejs");
 
 // Serve static files from the "public" directory
@@ -19,21 +17,23 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
-// Handle weather data fetching
+// Handle the weather fetching
 app.post("/weather", async (req, res) => {
-  const city = req.body.city;
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+  let inputVal = req.body.city;
+
+  const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${inputVal}&appid=${apiKey}&units=metric`;
 
   try {
-    const response = await axios.get(url);
-    const { main, name, sys, weather } = response.data;
+    // Fetch the weather data
+    const weatherResponse = await axios.get(weatherUrl);
+    const { main, name, sys, weather } = weatherResponse.data;
 
     res.json({
       name,
       country: sys.country,
       temp: Math.round(main.temp),
-      icon: `https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/${weather[0].icon}.svg`,
-      description: weather[0].description,
+      icon: weather[0]["icon"],
+      description: weather[0]["description"]
     });
   } catch (error) {
     res.status(400).json({ error: "Please search for a valid city 😩" });
